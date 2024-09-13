@@ -1,0 +1,84 @@
+# Copyright 2024 JC-Lab
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tpm-kms-plugin
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: tpm-kms-plugin-ds
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: tpm-kms-plugin-ds
+    spec:
+      priorityClassName: "system-node-critical"
+      nodeSelector:
+        node-role.kubernetes.io/master: "true"
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: Exists
+      - key: "node-role.kubernetes.io/master"
+        operator: Exists
+        effect: NoSchedule
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: plugin
+        image: ghcr.io/jc-lab/k8s-tpm-kms-plugin:v0.0.4
+        command:
+          - /k8s-tpm-kms-plugin
+          - --unix-socket=/var/run/kmsplugin/k8s-tpm-kms-plugin.sock
+          - --kms=v2
+        env:
+          - name: FAIL_ON_INIT_ERROR
+            value: "false"
+        volumeMounts:
+        - name: data-dir
+          mountPath: /var/lib/k8s-tpm-kms-plugin
+        - name: plugin-dir
+          mountPath: /var/run/kmsplugin
+        - name: dev-tpm
+          mountPath: /dev/tpmrm0
+        securityContext:
+          privileged: true
+        ports:
+          - name: healthz
+            containerPort: 8081
+          - name: metrics
+            containerPort: 8082
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 3
+      volumes:
+        - name: data-dir
+          hostPath:
+            path: /var/lib/k8s-tpm-kms-plugin
+            type: DirectoryOrCreate
+        - name: plugin-dir
+          hostPath:
+            path: /var/run/kmsplugin
+            type: DirectoryOrCreate
+        - name: dev-tpm
+          hostPath:
+            path: /dev/tpmrm0

@@ -10,8 +10,6 @@ RUN cd /build/ && \
 FROM alpine:3.20
 COPY --from=builder /build/k8s-tpm-kms-plugin /k8s-tpm-kms-plugin
 
-USER 1001
-
 # VOLUME /var/lib/k8s-tpm-kms-plugin
 # DEVICE /dev/tpmrm0
 
