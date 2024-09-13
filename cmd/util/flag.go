@@ -22,12 +22,14 @@ import (
 
 func ParsePCRs(s string) []uint {
 	var PCRs []uint
-	for _, s := range strings.Split(s, ",") {
-		pcr, err := strconv.Atoi(s)
-		if err != nil {
-			glog.Fatalln(err)
+	if len(s) > 0 {
+		for _, s := range strings.Split(s, ",") {
+			pcr, err := strconv.Atoi(s)
+			if err != nil {
+				glog.Fatalln(err)
+			}
+			PCRs = append(PCRs, uint(pcr))
 		}
-		PCRs = append(PCRs, uint(pcr))
 	}
 	return PCRs
 }
