@@ -26,21 +26,21 @@ jobs:
 
       - name: Build For Linux x86_64
         run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/k8s-tpm-kms-plugin-linux_x86_64.exe ./cmd/k8s-tpm-kms-plugin
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/tpm-seal-linux_x86_64.exe ./cmd/tpm-seal
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/tpm-unseal-linux_x86_64.exe ./cmd/tpm-unseal
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/k8s-tpm-kms-plugin-linux_x86_64 ./cmd/k8s-tpm-kms-plugin
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/tpm-seal-linux_x86_64 ./cmd/tpm-seal
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/tpm-unseal-linux_x86_64 ./cmd/tpm-unseal
 
       - name: Build For Linux arm64
         run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o dist/k8s-tpm-kms-plugin-linux_arm64.exe ./cmd/k8s-tpm-kms-plugin
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o dist/tpm-seal-linux_arm64.exe ./cmd/tpm-seal
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o dist/tpm-unseal-linux_arm64.exe ./cmd/tpm-unseal
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o dist/k8s-tpm-kms-plugin-linux_arm64 ./cmd/k8s-tpm-kms-plugin
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o dist/tpm-seal-linux_arm64 ./cmd/tpm-seal
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o dist/tpm-unseal-linux_arm64 ./cmd/tpm-unseal
 
       - name: Build For Windows
         run: |
-          GOOS=windows GOARCH=amd64 go build -o dist/k8s-tpm-kms-plugin-linux_x86_64.exe ./cmd/k8s-tpm-kms-plugin
-          GOOS=windows GOARCH=amd64 go build -o dist/tpm-seal-linux_x86_64.exe ./cmd/tpm-seal
-          GOOS=windows GOARCH=amd64 go build -o dist/tpm-unseal-linux_x86_64.exe ./cmd/tpm-unseal
+          GOOS=windows GOARCH=amd64 go build -o dist/k8s-tpm-kms-plugin-windows_x86_64.exe ./cmd/k8s-tpm-kms-plugin
+          GOOS=windows GOARCH=amd64 go build -o dist/tpm-seal-windows_x86_64.exe ./cmd/tpm-seal
+          GOOS=windows GOARCH=amd64 go build -o dist/tpm-unseal-windows_x86_64.exe ./cmd/tpm-unseal
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
@@ -74,8 +74,6 @@ jobs:
       - name: build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: Dockerfile
           cache-from: type=gha
           cache-to: type=gha
           push: ${{ github.event_name == 'push' }}
