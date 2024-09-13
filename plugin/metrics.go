@@ -63,7 +63,7 @@ func (m *Metrics) Serve() chan error {
 
 	go func() {
 		defer close(errorChan)
-		glog.Infof("Registering Metrics listener on port %s", m.ServingURL.Port())
+		glog.Infof("Registering Metrics listener at %v", m.ServingURL)
 		errorChan <- http.ListenAndServe(m.ServingURL.Host, mux)
 	}()
 

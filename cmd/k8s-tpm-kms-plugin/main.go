@@ -35,14 +35,16 @@ import (
 )
 
 var (
+	healthzAddr    = flag.String("healthz-addr", "0.0.0.0", "Port on which to publish healthz")
 	healthzPort    = flag.Int("healthz-port", 8081, "Port on which to publish healthz")
 	healthzPath    = flag.String("healthz-path", "healthz", "Path at which to publish healthz")
 	healthzTimeout = flag.Duration("healthz-timeout", 5*time.Second, "timeout in seconds for communicating with the unix socket")
 
+	metricsAddr = flag.String("metrics-addr", "0.0.0.0", "Address on which to publish metrics")
 	metricsPort = flag.Int("metrics-port", 8082, "Port on which to publish metrics")
 	metricsPath = flag.String("metrics-path", "metrics", "Path at which to publish metrics")
 
-	pathToUnixSocket = flag.String("unix-socket", "/var/run/k8s-tpm-kms-plugin.sock", "Full path to Unix socket that is used for communicating with KubeAPI Server, or Linux socket namespace object - must start with @")
+	pathToUnixSocket = flag.String("unix-socket", "/var/run/kmsplugin/k8s-tpm-kms-plugin.sock", "Full path to Unix socket that is used for communicating with KubeAPI Server, or Linux socket namespace object - must start with @")
 	kmsVersion       = flag.String("kms", "v2", "Kubernetes Service API version. Possible values: v1, v2. Default value is v2.")
 
 	tpmDevice        = flag.String("tpm-device", "/dev/tpmrm0", "TPM_DEVICE Path to tpm device or tpm resource manager.")
@@ -56,6 +58,10 @@ var (
 	pathToExport = flag.String("export", "", "Domain Key export path")
 	password     = flag.String("password", "", "import/export password")
 )
+
+func init() {
+	flag.Set("logtostderr", "true")
+}
 
 func main() {
 	var exitErr error
@@ -111,7 +117,7 @@ func main() {
 
 	metrics := &plugin.Metrics{
 		ServingURL: &url.URL{
-			Host: fmt.Sprintf("localhost:%d", *metricsPort),
+			Host: fmt.Sprintf("%s:%d", *metricsAddr, *metricsPort),
 			Path: *metricsPath,
 		},
 	}
@@ -133,7 +139,7 @@ func main() {
 	}
 
 	hc := plugin.NewHealthChecker(healthChecker, svc, *pathToUnixSocket, *healthzTimeout, &url.URL{
-		Host: fmt.Sprintf("localhost:%d", *healthzPort),
+		Host: fmt.Sprintf("%s:%d", *healthzAddr, *healthzPort),
 		Path: *healthzPath,
 	})
 
