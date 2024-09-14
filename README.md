@@ -59,6 +59,46 @@ $ k8s-tpm-kms-plugin --import exported.bin \
 Enter password: **********
 ```
 
+## Installation for Kubernetes
+
+```bash
+$ sudo wget -O /opt/k8s-tpm-kms-plugin https://github.com/jc-lab/k8s-tpm-kms-plugin/releases/download/v0.0.4/k8s-tpm-kms-plugin-linux_x86_64
+$ sudo chmod +x /opt/k8s-tpm-kms-plugin
+$ sudo mkdir -p mkdir -p /var/run/kmsplugin/ /var/lib/k8s-tpm-kms-plugin/
+(WAIT! You must provision.)
+$ cat <<EOF | sudo tee /etc/systemd/system/k8s-tpm-kms-plugin.service
+[Unit]
+Description=Kubernetes TPM KMS Plugin
+
+[Service]
+ExecStart=/opt/k8s-tpm-kms-plugin --kms=v2 --healthz-addr=127.0.0.1 --healthz-port=51201 --metrics-addr=127.0.0.1 --metrics-port=51202 --additional-secret YOUR_ADDITIONAL_SECRET
+Restart=on-failure
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+$ sudo systemctl daemon-reload && sudo systemctl start k8s-tpm-kms-plugin.service
+
+$ cat <<EOF | sudo tee /etc/kubernetes/encryption-config.yaml
+apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+  - resources:
+      - testsecrets
+    providers:
+      - kms:
+          apiVersion: v2
+          name: k8sTpmKmsPlugin
+          endpoint: unix:///var/run/kmsplugin/k8s-tpm-kms-plugin.sock
+          timeout: 3s
+      - identity: {}
+EOF
+
+(Modify your kubelet config: --encryption-provider-config=/etc/kubernetes/encryption-config.yaml)
+```
+
 # License
 
 [Apache License 2.0](./LICENSE)
