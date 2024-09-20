@@ -98,6 +98,8 @@ func main() {
 	svc.SetAdditionalSecret(additionalSecret)
 	*additionalSecret = ""
 
+	os.MkdirAll(svc.DataDir, 0755)
+
 	if len(*pathToImport) > 0 {
 		enterPasswordIfNeeded(password, false)
 		exitErr = svc.Import(*pathToImport, *password)
@@ -110,6 +112,8 @@ func main() {
 		exitErr = svc.Provision()
 		return
 	}
+
+	os.MkdirAll(filepath.Dir(*pathToUnixSocket), 0755)
 
 	if exitErr = svc.Start(); exitErr != nil {
 		return
